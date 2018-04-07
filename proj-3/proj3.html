@@ -1,0 +1,50 @@
+<html>
+
+<head>
+    <title>Info Visualization in D3</title>
+    <link type="text/css" href="proj3.css" rel="stylesheet"></link>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.min.js"></script>
+</head>
+
+<body>
+    <div id="visContainer">
+        <h1>InfoVis with D3: Worldwide Sentiment of a Connected Future</h1>
+        <p><i>(This visualization was built using D3 for my Information Visualization Class. The data is from a survey conducted by Mozilla, asking how individuals feel about an increasingly-connected future. I decided to visualize the responses by country with a choropleth map. Pretty happy with how it turned out!)</i></p>
+
+        <p>This visualization examines the major fears and excitements felt by the survey respondents from each country. In the world map, each country is colored by the most common fear that responders from that country have picked. This way, we can see overall regional differences in sentiments of a connected future.</p>
+        <p>Click on a country to select it and view the breakdown of fears and excitements, the number of responses (a proxy for confidence in survey results), and compare that country's responses to the global average responses.</p>
+        <p>At the country-level, click on a specific response (a bar) from a country's bar graph to observe to what degree the other countries agree with that response.</p>
+        <div id="map">
+            <p class="menu"><b>Menu:</b> Paint map with: 
+                <span class="menubutton" id="fearbutton" style="background-color:gold;">Fears</span> or 
+                <span class="menubutton" id="excitebutton" style="background-color:white;">Excitements</span>.
+            </p>
+            <h3 align="center" style="margin-bottom:0em;"></h3>
+            <h4 align="center" style="margin-top:0em;"></h4>
+            <h2 align="center">Loading Map...</h2>
+        </div>
+        <div id="countryInfo">
+            <div class="menu">
+                <h3></h3>
+                <p>Click a country to view details!</p>
+            </div>
+            <svg class="fears" height="230" width="280"><g></g></svg><br />
+            <svg class="excitements" height="230" width="280"><g></g></svg>
+        </div>
+        <div class="clear"></div>
+        <div id="footer">
+            <p>- Data Source: 
+                <a href="https://blog.mozilla.org/blog/2017/11/01/10-fascinating-things-we-learned-when-we-asked-the-world-how-connected-are-you/">Mozilla Internet Citizen's Connected Future Survey</a>
+            </p>
+        </div>
+    </div>
+
+    <div id="tooltip">
+        <p style="margin:0em;"></p>
+    </div>
+
+    <script type="text/javascript" src="proj3.js"></script>
+</body>
+
+</html>

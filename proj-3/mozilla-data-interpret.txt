@@ -1,0 +1,26 @@
+Translation:
+
+A	Country
+
+B	Thinking about a future in which so much of your world is connected to the internet leaves you feeling:
+0	Scared as hell
+1	A little wary
+2 	On the fence
+3	Cautiously optimistic
+4	Super excited!
+
+C	What are you most excited about as we move toward a more digitally connected future?
+0	None of the above
+1	How much fun it will be
+2	How it will bring the world together
+3	How it will make us all smarter and better educated
+4	How easy it will make life
+5	Other (please specify)
+
+D	What is your biggest fear as we move towards a more connected future?
+0	The loss of privacy
+1	We'll lose touch with one another
+2	I have no fears about a more connected future
+3	We'll be less safe
+4	Other (please specify)
+
