@@ -1,0 +1,399 @@
+<html>
+<head>
+<title>Project 0</title>
+<link rel="stylesheet" type="text/css" href="project1.css" />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<!--Put your D3 import statement between these two lines-->
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+<!--Put your D3 import statement between these two lines-->
+</head>
+
+<body>
+    <div id="partOne">
+        <h1>Part One: </h1>
+        I've made a change!
+    </div>
+
+    <div id="partTwo">
+        <h1>Part Two: </h1>
+        <div id="barchart">
+        </div>
+    </div>
+
+    <div id="partThree">
+        <h1>Part Three &amp; Four: </h1>
+        <div class="scatterplotMenu">
+            <p>Menu: Pick a dataset to display.</p>
+            <ul class="scatterplotMenuList">
+              <li id="data1">Anscombe I</li>
+              <li id="data2">Anscombe II</li>
+              <li id="data3">Anscombe III</li>
+              <li id="data4">Anscombe IV</a></li>
+            </ul>
+            <br /><br /><br />
+        </div>
+        <div id="scatterplot">
+            <p id="scatterLabel"></p>
+        </div>
+    </div>
+
+    <div id="partFive">
+        <h1>Part Five: </h1>
+        <div id="scatterplotSet">
+        </div>
+    </div>
+
+    <div id="tooltip" style="opacity:0; position: absolute; top: 0; right: 0; text-align: center; margin:0; padding:0.5em; background:lightgreen; border:1px; border-style:solid; border-color:black; width:8em">
+        <p style="margin:0em;"></p>
+    </div>
+
+    <script type="text/javascript">
+        // general width values for SVG canvas areas
+        var margin = {top: 40, right: 20, bottom: 30, left: 50};
+        var width = d3.min([window.innerWidth - 25, 960]);
+        var height = 500;
+
+        var data1;
+        var data2;
+        var data3;
+        var data4;
+        // Put your part one code here ***********************
+        d3.csv("data/anscombe_I.csv", function(error, data) {
+            if (error) throw error;
+            checkDataset(data);
+            data.sort(function(a,b) {
+                return +a[data.columns[0]] - +b[data.columns[0]];
+            });
+            data1 = data;
+            makeScatterPlot(data, data.columns[0], data.columns[1]);
+            makeLineGraph(data, data.columns[0], data.columns[1]);
+            addScatterPlotToSet(data, data.columns[0], 
+                                data.columns[1], "Anscombe I");
+        })
+        d3.csv("data/anscombe_II.csv", function(error, data) {
+            if (error) throw error;
+            checkDataset(data);
+            data.sort(function(a,b) {
+                return +a[data.columns[0]] - +b[data.columns[0]];
+            });
+            data2 = data;
+            addScatterPlotToSet(data, data.columns[0], 
+                                data.columns[1], "Anscombe II");
+        })
+        d3.csv("data/anscombe_III.csv", function(error, data) {
+            if (error) throw error;
+            checkDataset(data);
+            data.sort(function(a,b) {
+                return +a[data.columns[0]] - +b[data.columns[0]];
+            });
+            data3 = data;
+            addScatterPlotToSet(data, data.columns[0], 
+                                data.columns[1], "Anscombe III");
+        })
+        d3.csv("data/anscombe_IV.csv", function(error, data) {
+            if (error) throw error;
+            checkDataset(data);
+            data.sort(function(a,b) {
+                return +a[data.columns[0]] - +b[data.columns[0]];
+            });
+            data4 = data;
+            addScatterPlotToSet(data, data.columns[0], 
+                                data.columns[1], "Anscombe IV");
+        })
+
+        // Leave this to test your data uploading. All data 
+        //   uploading should be above this line
+        function checkDataset(dataset) {
+            if (dataset.length == 11)
+                $("#partOne").append("<p>data loaded correctly</p>");
+            else
+                $("#partOne").append("<p>data loaded incorrectly. Try using the debugger to help you find the bug!</p>");
+        }
+
+        // Put your part two code here ************
+        function setPlotSize(data, xVal, yVal, factor) {
+            // linear mapping btw data and pixel space***********
+            var abs_margin = 5
+            //scaled_margin = {top: margin.top/factor,
+            //                 right: margin.right/factor,
+            //                 bottom: margin.bottom/factor,
+            //                 left: margin.left / factor};
+            var data_width = (width/factor) - abs_margin - 
+                             margin.left - 
+                             margin.right;
+            var data_height = (height / factor) - abs_margin - 
+                             //scaled_margin.top - scaled_margin.bottom;
+                              margin.top- 
+                              margin.bottom;
+            var x = d3.scaleLinear()
+            var y = d3.scaleLinear()
+            // Scale the dom/range of the data: pull out min/max
+            x.domain(d3.extent(data, function(d) {return +d[xVal];}));
+            y.domain([0, d3.max(data, function(d) {return +d[yVal];})]);
+            x.range([0, data_width]);
+            y.range([data_height, 0]);
+            scale = {x:x, y:y, 
+                     margin:margin,//margin:scaled_margin,
+                     width:data_width, 
+                     height:data_height,
+                     svg_width:(width/factor) - abs_margin,
+                     svg_height:(height/factor) - abs_margin};
+            return scale
+        }
+
+        function makeLineGraph(data, xVal, yVal) {
+            // sort by X value:
+            data.sort(function(a,b) {return +a[xVal] - +b[xVal];});
+
+            // scale data and get SVG/plot sizes
+            scale = setPlotSize(data, xVal, yVal, 1);
+
+            // add svg tag to document
+            var svg = d3.select("body #partTwo #barchart").append("svg")
+                        .attr("width", scale.svg_width)
+                        .attr("height", scale.svg_height)
+                        .append("g")
+                        .attr("transform", "translate(" + 
+                            scale.margin.left + "," + 
+                            scale.margin.top + ")");
+
+            // Add the X Axis
+            svg.append("g")
+              .attr("transform", "translate(0, " + scale.height + ")")
+              .call(d3.axisBottom(scale.x));
+            // Add the Y Axis
+            svg.append("g")
+              .call(d3.axisLeft(scale.y));
+            // add the text labels
+            svg.append("text")
+              .attr("class", "label")
+              .text(xVal)
+              .attr("x", scale.width - 20)
+              .attr("y", scale.height - 10);
+            svg.append("text")
+              .attr("class", "label")
+              .text(yVal)
+              .attr("y", -10);
+
+            // add the line connecting the points
+            var line = d3.line()
+              .x(function(d) {return scale.x(+d[xVal]);})
+              .y(function(d) {return scale.y(+d[yVal]);})
+            svg.append("path")
+              .datum(data)
+              .attr("d", line)
+              .style("fill", "none")
+              .style("stroke", "black")
+              .style("stroke-width", "2px");
+        }
+
+        // Put your part three & four code here **********************
+        function handleScatterDotMouseoverEvent(d, i) {
+            // change color on mouseover
+            d3.select(this).attr("fill", "red");
+            // bell 1: tooltip appear
+            d3.select("body #tooltip")
+              .style("opacity", 0.9)
+              .style("left", (d3.event.pageX + 5) + "px")
+              .style("top", (d3.event.pageY + 5) + "px");
+            d3.select("body #tooltip p")
+              .text("X: " + d.x + ", Y:  " + d.y);
+        }
+
+        function handleScatterDotMouseoutEvent() {
+            // change color back on mouseout
+            d3.select(this).attr("fill", "darkblue");
+            // bell 1: tooltip disappear
+            d3.select("body #tooltip")
+              .style("opacity", 0)
+              .style("left", "0px")
+              .style("top", "0px");
+        }
+
+        function handleScatterDotClickEvent(d, i) {
+            // update label with clicked point's coords
+            d3.select("body #partThree #scatterplot #scatterLabel")
+              .text("Current point: (" + d.x + ", " + d.y + ")");
+        }
+
+        function makeScatterPlot(data, xVal, yVal) {
+            scale = setPlotSize(data, xVal, yVal, 1);
+
+            // add svg tag to document
+            var svg = d3.select("body #partThree #scatterplot").append("svg")
+                        .attr("width", scale.svg_width)
+                        .attr("height", scale.svg_height)
+                        .append("g")
+                        .attr("transform", "translate(" + 
+                            scale.margin.left + "," + 
+                            scale.margin.top + ")");
+
+            // Add the scatterplot points
+            svg.selectAll("circle") // create set
+              .data(data) // bind data
+              .enter() // enter data so we can use it
+              .append("circle") // append circle for each datapoint
+              .attr("r", 7)
+              .attr("cx", function(d) {return scale.x(+d[xVal]);})
+              .attr("cy", function(d) {return scale.y(d[yVal])})
+              .attr("fill", "darkblue")
+              .on("mouseover", handleScatterDotMouseoverEvent)
+              .on("mouseout", handleScatterDotMouseoutEvent)
+              .on("click", handleScatterDotClickEvent);
+
+            // Add the X Axis
+            svg.append("g")
+              .attr("transform", "translate(0, " + scale.height + ")")
+              .call(d3.axisBottom(scale.x));
+
+            // Add the Y Axis
+            svg.append("g")
+              .call(d3.axisLeft(scale.y));
+
+            // add the text labels
+            svg.append("text")
+              .attr("class", "label")
+              .text(xVal)
+              .attr("x", scale.width - 20)
+              .attr("y", scale.height - 10);
+            svg.append("text")
+              .attr("class", "label")
+              .text(yVal)
+              .attr("y", -10);
+        }
+
+        // Put your part five code here ***********************
+        function addScatterPlotToSet(data, xVal, yVal, label) {
+            // append new scatterplot to set
+            scale = setPlotSize(data, xVal, yVal, 2);
+
+            // add svg tag to document
+            var svg = d3.select("body #partFive #scatterplotSet").append("svg")
+                        .attr("width", scale.svg_width)
+                        .attr("height", scale.svg_height)
+                        .append("g")
+                        .attr("transform", "translate(" + 
+                            scale.margin.left + "," + 
+                            scale.margin.top + ")");
+
+            // Add the scatterplot points
+            svg.selectAll("circle") // create set
+              .data(data) // bind data
+              .enter() // enter data so we can use it
+              .append("circle") // append circle for each datapoint
+              .attr("r", 4)
+              .attr("cx", function(d) {return scale.x(+d[xVal]);})
+              .attr("cy", function(d) {return scale.y(d[yVal])})
+              .attr("fill", "darkblue")
+
+            // Add the X Axis
+            svg.append("g")
+              .attr("transform", "translate(0, " + scale.height + ")")
+              .call(d3.axisBottom(scale.x));
+
+            // Add the Y Axis
+            svg.append("g")
+              .call(d3.axisLeft(scale.y));
+
+            // add the text labels
+            svg.append("text")
+              .attr("class", "label")
+              .text(label)
+              .style("font-weight", "bold")
+              .attr("x", (scale.width / 2) - (scale.margin.left / 2))
+              .attr("y", -10); //scale.margin.top);
+            svg.append("text")
+              .attr("class", "label")
+              .text(xVal)
+              .attr("x", scale.width - 20)
+              .attr("y", scale.height - 10);
+            svg.append("text")
+              .attr("class", "label")
+              .text(yVal)
+              .attr("y", -10);
+
+            bestFit = calcLinearRegression(data, xVal, yVal);
+            var bfLine = d3.line()
+              .x(function(d) {return scale.x(d[0]);})
+              .y(function(d) {return scale.y(d[1]);})
+            svg.append("path")
+              .datum(bestFit)
+              .attr("d", bfLine)
+              .style("fill", "none")
+              .style("stroke", "red")
+              .style("stroke-width", "2px");
+        }
+
+        // extra credit
+        function calcLinearRegression(data, xVal, yVal) {
+            var x_sum = 0;
+            var y_sum = 0;
+            var x_sq_sum = 0;
+            var y_sq_sum = 0;
+            var xy_sum = 0;
+            for(i = 0; i < data.length; i++) {
+                x = +data[i][xVal];
+                y = +data[i][yVal];
+                x_sum += x;
+                y_sum += y;
+                x_sq_sum += x * x;
+                y_sq_sum += y * y;
+                xy_sum += x * y;
+            }
+            // plug into equation
+            den = (data.length * x_sq_sum) - (x_sum * x_sum);
+            m = ((data.length * xy_sum) - (x_sum * y_sum)) / den;
+            b = ((y_sum * x_sq_sum) - (x_sum * xy_sum)) / den;
+
+            xs = d3.extent(data, function(d) { return +d[xVal]; })
+            y0 = m * xs[0] + b
+            y1 = m * xs[1] + b
+
+            results = [[xs[0], y0], [xs[1], y1]];
+            return results;
+        }
+
+        function updateScatterPlot(data, xVal, yVal) {
+            scale = setPlotSize(data, xVal, yVal, 1);
+            // add svg tag to document
+            var svg = d3.select("body #partThree #scatterplot svg")
+
+            // Add the scatterplot points
+            svg.selectAll("circle") // create set
+              .data(data) // bind data
+              .transition()
+              .attr("r", 7)
+              .attr("cx", function(d) {return scale.x(+d[xVal]);})
+              .attr("cy", function(d) {return scale.y(d[yVal])})
+              .duration(500)
+              .ease(d3.easeCubicInOut);
+        }
+
+        function createScatterPlotMenu() {
+            // select items by id
+            var menu = d3.select("body #partThree .scatterplotMenu");
+            menu.select("#data1")
+              .on("click", function() { handleMenuClick(data1, 1); });
+            menu.select("#data2")
+              .on("click", function() { handleMenuClick(data2, 2); });
+            menu.select("#data3")
+              .on("click", function() { handleMenuClick(data3, 3); });
+            menu.select("#data4")
+              .on("click", function() { handleMenuClick(data4, 4); });
+        }
+
+        function handleMenuClick(data, itemNum) {
+            d3.selectAll(".scatterplotMenu li")
+              .style("background-color", "white");
+            d3.select("#data" + itemNum)
+              .style("background-color", "lightgreen");
+            console.log(itemNum);
+            updateScatterPlot(data, data.columns[0], data.columns[1]);
+        }
+        createScatterPlotMenu();
+
+    </script>
+</body>
+
+
+</html>
